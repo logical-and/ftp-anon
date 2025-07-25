@@ -109,6 +109,18 @@ if [ -n "$DETECTED_IP" ]; then
     log_debug "Added pasv_address=$DETECTED_IP to configuration"
 fi
 
+# Enable comprehensive logging for all FTP activity
+log "=== Configuring comprehensive FTP logging ==="
+echo "log_ftp_protocol=YES" >> /tmp/vsftpd.conf
+echo "syslog_enable=NO" >> /tmp/vsftpd.conf
+echo "vsftpd_log_file=/var/log/vsftpd.log" >> /tmp/vsftpd.conf
+echo "dual_log_enable=YES" >> /tmp/vsftpd.conf
+echo "xferlog_enable=YES" >> /tmp/vsftpd.conf
+echo "xferlog_std_format=YES" >> /tmp/vsftpd.conf
+echo "xferlog_file=/var/log/xferlog" >> /tmp/vsftpd.conf
+echo "session_support=YES" >> /tmp/vsftpd.conf
+log "Enabled comprehensive logging: connections, commands, and transfers"
+
 # Configure FTP port
 if [ -n "$PORT" ] && [ "$PORT" != "21" ]; then
     log "Setting FTP port to: $PORT"
@@ -347,6 +359,15 @@ fi
 
 # Start vsftpd in foreground mode
 log "=== Starting vsftpd daemon ==="
+
+# Ensure log directory exists with proper permissions
+log_debug "Setting up logging infrastructure"
+mkdir -p /var/log
+touch /var/log/vsftpd.log
+touch /var/log/xferlog
+chmod 644 /var/log/vsftpd.log /var/log/xferlog
+chown root:root /var/log/vsftpd.log /var/log/xferlog
+
 log "vsftpd starting in foreground mode..."
 if [ -n "$DETECTED_IP" ]; then
     log "FTP server ready! Connect to: ftp://anonymous@$DETECTED_IP:${PORT:-21}/public/"
@@ -360,6 +381,55 @@ log "Ready to accept FTP connections"
 VSFTPD_PID=$!
 
 log "vsftpd started with PID: $VSFTPD_PID"
+
+# Simple log monitoring function
+monitor_ftp_logs() {
+    # Wait for vsftpd to start and potentially create log files
+    sleep 3
+    
+    log "Starting comprehensive FTP activity monitoring..."
+    
+    # Create log files if they don't exist
+    touch /var/log/vsftpd.log
+    touch /var/log/xferlog
+    
+    # Monitor main vsftpd log for connections, commands, and protocol activity
+    log_debug "Monitoring /var/log/vsftpd.log for connections and commands"
+    tail -f /var/log/vsftpd.log 2>/dev/null | while read line; do
+        if [ -n "$line" ]; then
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] [FTP-ACTIVITY] $line"
+        fi
+    done &
+    VSFTPD_LOG_PID=$!
+    
+    # Monitor xferlog for file transfers
+    log_debug "Monitoring /var/log/xferlog for file transfers"
+    tail -f /var/log/xferlog 2>/dev/null | while read line; do
+        if [ -n "$line" ]; then
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] [TRANSFER] $line"
+        fi
+    done &
+    XFERLOG_PID=$!
+    
+    # Also monitor system messages for any vsftpd-related entries
+    if [ -f "/var/log/messages" ]; then
+        log_debug "Monitoring /var/log/messages for system-level FTP events"
+        tail -f /var/log/messages 2>/dev/null | grep -i vsftpd | while read line; do
+            if [ -n "$line" ]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] [SYSTEM] $line"
+            fi
+        done &
+        MESSAGES_PID=$!
+    fi
+    
+    log "FTP activity monitoring started - you should see all connections, commands, and transfers"
+    log_debug "Log monitoring PIDs: vsftpd=${VSFTPD_LOG_PID}, xferlog=${XFERLOG_PID}"
+}
+
+# Start comprehensive FTP activity monitoring (always enabled)
+log "Starting comprehensive FTP activity monitoring..."
+monitor_ftp_logs
+log "FTP activity monitoring is now active - you will see all connections, commands, and transfers"
 
 # Wait for vsftpd process to finish
 wait $VSFTPD_PID 
