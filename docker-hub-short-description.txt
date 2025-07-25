@@ -1,0 +1,1 @@
+📁 Lightweight Alpine-based FTP server with anonymous access for file uploads and downloads 🚀 

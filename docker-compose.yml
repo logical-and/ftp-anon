@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  ftp-server:
+    build: .
+    ports:
+      - "21:21"
+      - "30000-30100:30000-30100"  # Passive mode port range
+    environment:
+      # Core Settings
+      - EXTERNAL_IP=  # External IP (optional - will auto-detect using ipify.org)
+      - PORT=21
+      - PASSIVE_ENABLE=YES
+      - PASSIVE_MIN_PORT=30000
+      - PASSIVE_MAX_PORT=30100
+      - LOCAL_UMASK=022
+      
+      # Connection & Security
+      - MAX_CLIENTS=50  # Maximum simultaneous connections
+      - MAX_PER_IP=5  # Maximum connections from same IP
+      - IDLE_TIMEOUT=600  # Session idle timeout (seconds)
+      - DATA_TIMEOUT=120  # Data connection timeout (seconds)
+      - LISTEN_ADDRESS=  # Specific IP to bind to (optional)
+      
+      # Transfer Limits
+      - MAX_UPLOAD_RATE=0  # Upload speed limit (bytes/sec, 0=unlimited)
+      - MAX_DOWNLOAD_RATE=0  # Download speed limit (bytes/sec, 0=unlimited)
+      - MAX_FILE_SIZE=0  # Maximum file size for uploads (bytes, 0=unlimited)
+      
+      # File Operations
+      - ALLOW_DELETE=NO  # Allow anonymous users to delete files
+      - ALLOW_OVERWRITE=YES  # Allow overwriting existing files
+      - DIR_UMASK=022  # Directory creation umask
+      
+      # Logging & Display
+      - LOG_LEVEL=NORMAL  # Log verbosity (MINIMAL/NORMAL/VERBOSE/DEBUG)
+      - LOG_UPLOADS=YES  # Log file uploads
+      - LOG_DOWNLOADS=YES  # Log file downloads
+      - BANNER_TEXT=  # Custom welcome banner (optional - auto-generated if empty)
+      
+      # Performance
+      - ASCII_MODE=YES  # Enable ASCII transfer mode
+      - USE_SENDFILE=YES  # Use sendfile for better performance
+    restart: unless-stopped
+    container_name: anonymous-ftp 
