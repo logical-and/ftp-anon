@@ -108,7 +108,12 @@ cp /etc/vsftpd/vsftpd.conf /tmp/vsftpd.conf
 if [ -n "$DETECTED_IP" ]; then
     log "Setting external IP to: $DETECTED_IP"
     echo "pasv_address=$DETECTED_IP" >> /tmp/vsftpd.conf
+    echo "pasv_addr_resolve=NO" >> /tmp/vsftpd.conf
+    # Additional Docker networking fixes
+    echo "pasv_promiscuous=YES" >> /tmp/vsftpd.conf
     log_debug "Added pasv_address=$DETECTED_IP to configuration"
+    log_debug "Added pasv_addr_resolve=NO to prevent IP resolution issues"
+    log_debug "Added pasv_promiscuous=YES for Docker networking compatibility"
 fi
 
 # Enable comprehensive logging for all FTP activity
@@ -362,6 +367,17 @@ fi
 # Start vsftpd in foreground mode
 log "=== Starting vsftpd daemon ==="
 
+# Validate configuration before starting
+log_debug "Validating vsftpd configuration..."
+if ! /usr/sbin/vsftpd /tmp/vsftpd.conf -t 2>/dev/null; then
+    log_error "Configuration validation failed! Checking for common issues..."
+    /usr/sbin/vsftpd /tmp/vsftpd.conf -t 2>&1 | while read error_line; do
+        log_error "Config error: $error_line"
+    done
+else
+    log_debug "Configuration validation passed"
+fi
+
 # Ensure log directory exists with proper permissions
 log_debug "Setting up logging infrastructure"
 mkdir -p /var/log
@@ -429,9 +445,7 @@ monitor_ftp_logs() {
 }
 
 # Start comprehensive FTP activity monitoring (always enabled)
-log "Starting comprehensive FTP activity monitoring..."
 monitor_ftp_logs
-log "FTP activity monitoring is now active - you will see all connections, commands, and transfers"
 
 # Wait for vsftpd process to finish
 wait $VSFTPD_PID 
