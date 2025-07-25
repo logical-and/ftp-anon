@@ -6,7 +6,9 @@ log() {
 }
 
 log_debug() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [DEBUG] $1"
+    if [ "$LOG_LEVEL" = "VERBOSE" ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] [DEBUG] $1"
+    fi
 }
 
 log_error() {
@@ -349,7 +351,7 @@ log "  Allow Delete: ${ALLOW_DELETE}"
 log "  Allow Overwrite: ${ALLOW_OVERWRITE}"
 
 # Show final configuration file (for debugging)
-if [ "$LOG_LEVEL" = "DEBUG" ] || [ "$LOG_LEVEL" = "VERBOSE" ]; then
+if [ "$LOG_LEVEL" = "VERBOSE" ]; then
     log "=== Final vsftpd configuration ==="
     log_debug "Configuration file contents:"
     cat /tmp/vsftpd.conf | while read line; do

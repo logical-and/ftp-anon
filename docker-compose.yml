@@ -33,9 +33,7 @@ services:
       - DIR_UMASK=022  # Directory creation umask
       
       # Logging & Display
-      - LOG_LEVEL=NORMAL  # Log verbosity (MINIMAL/NORMAL/VERBOSE/DEBUG)
-      - LOG_UPLOADS=YES  # Log file uploads
-      - LOG_DOWNLOADS=YES  # Log file downloads
+      - LOG_LEVEL=VERBOSE  # Log verbosity (MINIMAL/VERBOSE)
       - BANNER_TEXT=  # Custom welcome banner (optional - auto-generated if empty)
       
       # Performance

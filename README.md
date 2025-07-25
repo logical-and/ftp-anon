@@ -86,9 +86,7 @@ docker-compose up -d
 ### Logging & Display
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `LOG_LEVEL` | NORMAL | Log verbosity (MINIMAL/NORMAL/VERBOSE/DEBUG) |
-| `LOG_UPLOADS` | YES | Log file uploads (YES/NO) |
-| `LOG_DOWNLOADS` | YES | Log file downloads (YES/NO) |
+| `LOG_LEVEL` | VERBOSE | Log verbosity (MINIMAL/VERBOSE) |
 | `BANNER_TEXT` | auto-generated | Custom welcome banner message |
 
 ### Performance
