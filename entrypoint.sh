@@ -13,6 +13,42 @@ log_error() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1"
 }
 
+# Signal handler for graceful shutdown
+cleanup() {
+    log "=== Shutdown signal received ==="
+    log "Stopping vsftpd daemon gracefully..."
+    
+    # Kill vsftpd process if it's running
+    if [ -n "$VSFTPD_PID" ]; then
+        log "Terminating vsftpd process (PID: $VSFTPD_PID)"
+        kill -TERM "$VSFTPD_PID" 2>/dev/null || true
+        
+        # Wait for process to terminate
+        local count=0
+        while kill -0 "$VSFTPD_PID" 2>/dev/null && [ $count -lt 10 ]; do
+            log_debug "Waiting for vsftpd to terminate... ($count/10)"
+            sleep 1
+            count=$((count + 1))
+        done
+        
+        # Force kill if still running
+        if kill -0 "$VSFTPD_PID" 2>/dev/null; then
+            log "Force killing vsftpd process"
+            kill -KILL "$VSFTPD_PID" 2>/dev/null || true
+        fi
+    fi
+    
+    # Cleanup temporary files
+    log_debug "Cleaning up temporary configuration files"
+    rm -f /tmp/vsftpd.conf
+    
+    log "FTP server shutdown complete"
+    exit 0
+}
+
+# Set up signal handlers
+trap cleanup INT TERM
+
 log "=== Starting FTP server configuration ==="
 log "Container startup initiated"
 
@@ -288,4 +324,12 @@ else
     log "FTP server ready! Connect with username 'anonymous' to upload files to /public/"
 fi
 log "Ready to accept FTP connections"
-exec /usr/sbin/vsftpd /tmp/vsftpd.conf 
+
+# Start vsftpd in background and capture PID
+/usr/sbin/vsftpd /tmp/vsftpd.conf &
+VSFTPD_PID=$!
+
+log "vsftpd started with PID: $VSFTPD_PID"
+
+# Wait for vsftpd process to finish
+wait $VSFTPD_PID 
