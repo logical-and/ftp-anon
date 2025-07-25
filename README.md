@@ -79,7 +79,7 @@ docker-compose up -d
 ### File Operations
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ALLOW_DELETE` | NO | Allow anonymous users to delete files (YES/NO) |
+| `ALLOW_DELETE` | YES | Allow anonymous users to delete files (YES/NO) |
 | `ALLOW_OVERWRITE` | YES | Allow overwriting existing files (YES/NO) |
 | `DIR_UMASK` | 022 | Directory creation umask |
 

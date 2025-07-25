@@ -28,7 +28,7 @@ services:
       - MAX_FILE_SIZE=0  # Maximum file size for uploads (bytes, 0=unlimited)
       
       # File Operations
-      - ALLOW_DELETE=NO  # Allow anonymous users to delete files
+      - ALLOW_DELETE=YES  # Allow anonymous users to delete files
       - ALLOW_OVERWRITE=YES  # Allow overwriting existing files
       - DIR_UMASK=022  # Directory creation umask
       
