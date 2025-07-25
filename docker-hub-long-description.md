@@ -2,24 +2,26 @@
 
 A lightweight Docker container running an FTP server with anonymous access for file uploads and downloads, built on Alpine Linux for minimal footprint. 🚀
 
+**GitHub Repository**: [logical-and/ftp-anon](https://github.com/logical-and/ftp-anon)
+
 ## 🚀 Quick Start
 
 ### Basic Usage
 
 ```bash
-docker run -d -p 21:21 -p 30000-30100:30000-30100 andspace/ftp-anon
+docker run -it --rm -p 21:21 -p 30000-30100:30000-30100 andspace/ftp-anon
 ```
 
 ### Custom Port
 
 ```bash
-PORT=2121 && docker run -d -p $PORT:$PORT -p 6000-6100:6000-6100 -v $(pwd):/var/ftp/public -e PORT=$PORT -e PASSIVE_MIN_PORT=6000 -e PASSIVE_MAX_PORT=6100 andspace/ftp-anon
+PORT=2121 && docker run -it --rm -p $PORT:$PORT -p 6000-6100:6000-6100 -v $(pwd):/var/ftp/public -e PORT=$PORT -e PASSIVE_MIN_PORT=6000 -e PASSIVE_MAX_PORT=6100 andspace/ftp-anon
 ```
 
 ### With Custom Options
 
 ```bash
-docker run -d \
+docker run -it --rm \
   -p 2121:2121 -p 35000-35100:35000-35100 \
   -e EXTERNAL_IP=192.168.1.100 \
   -e PORT=2121 \

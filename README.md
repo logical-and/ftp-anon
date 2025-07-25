@@ -2,7 +2,8 @@
 
 A lightweight Docker container running an FTP server with anonymous access for file uploads and downloads.
 
-**Docker Hub Repository**: [andspace/ftp-anon](https://hub.docker.com/repository/docker/andspace/ftp-anon/general)
+**Docker Hub Repository**: [andspace/ftp-anon](https://hub.docker.com/repository/docker/andspace/ftp-anon/general)  
+**GitHub Repository**: [logical-and/ftp-anon](https://github.com/logical-and/ftp-anon)
 
 ## Quick Start
 
