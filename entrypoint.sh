@@ -52,6 +52,36 @@ trap cleanup INT TERM
 log "=== Starting FTP server configuration ==="
 log "Container startup initiated"
 
+# Security check: Don't run if .ssh directory is detected
+log "=== Security Check ==="
+SSH_DIRS_FOUND=""
+
+# Check common locations for .ssh directories
+for ssh_path in "/root/.ssh" "/home/*/.ssh" "/var/ftp/.ssh" "/var/ftp/public/.ssh"; do
+    if [ -d "$ssh_path" ] || ls -d $ssh_path 2>/dev/null | grep -q ".ssh"; then
+        SSH_DIRS_FOUND="$SSH_DIRS_FOUND $ssh_path"
+    fi
+done
+
+# Also check recursively in FTP directories for any .ssh folders
+if [ -d "/var/ftp" ]; then
+    RECURSIVE_SSH=$(find /var/ftp -type d -name ".ssh" 2>/dev/null || true)
+    if [ -n "$RECURSIVE_SSH" ]; then
+        SSH_DIRS_FOUND="$SSH_DIRS_FOUND $RECURSIVE_SSH"
+    fi
+fi
+
+if [ -n "$SSH_DIRS_FOUND" ]; then
+    log_error "SECURITY ALERT: SSH directories detected!"
+    log_error "Found .ssh directories at:$SSH_DIRS_FOUND"
+    log_error "FTP server will NOT start to protect SSH key security."
+    log_error "Please remove or relocate .ssh directories before running the FTP server."
+    log_error "This prevents potential unauthorized access to SSH private keys."
+    exit 1
+fi
+
+log "Security check passed: No .ssh directories detected in FTP accessible areas"
+
 # Detect external IP using ipify.org service
 log "=== IP Detection ==="
 if [ -n "$EXTERNAL_IP" ]; then
